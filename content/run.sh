@@ -9,7 +9,7 @@ MYSQL_CREATE_DB_CMD="CREATE DATABASE ${MYSQL_ICINGA_DB}; \
 if [[ -z "${MYSQL_HOST}" ]]; then
   >&2 echo "no mysql database container find - please link a mysql/mariadb container using --link some-mariadb:mysql"
   exit 1
-fi  
+fi
 
 # check if icinga database exists		
 if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
@@ -23,15 +23,17 @@ if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQ
 	    echo "created icinga2 mysql database schema"
 		else
 		  >&2 echo "error creating icinga2 database schema"
+		  exit 1
 	  fi
       else
         >&2 echo "error creating database ${MYSQL_DB_NAME}"
+		exit 1
     fi
 fi
 
 # icinga2 features
 echo "enabling icinga2 features"
-# icinga2-enable-feature ido-mysql >> /dev/null
+# enable ido-mysql
 if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then 
   echo "symlink for /etc/icinga2/features-enabled/ido-mysql.conf already exists"; 
   else 
@@ -44,14 +46,31 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	
 fi
 
-# icinga2-enable-feature command >> /dev/null
-if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then 
-  echo "symlink for /etc/icinga2/features-enabled/command.conf already exists"; 
+# TODO - enable command?
+# enable command
+#if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then 
+#  echo "command feature already enabled"; 
+#  else 
+#    ln -s /etc/icinga2/features-available/command.conf /etc/icinga2/features-enabled/command.conf;
+#fi
+
+
+# enable api
+if [[ -L /etc/icinga2/features-enabled/api.conf ]]; then 
+  echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
   else 
-    ln -s /etc/icinga2/features-available/command.conf /etc/icinga2/features-enabled/command.conf;
+    icinga2 api setup
+	cat <<EOF >> /etc/icinga2/conf.d/api-users.conf
+
+object ApiUser  "${API_USER}" {
+  password =  "${API_PASSWORD}"
+  permissions = [ "*" ]
+}
+EOF
 fi
 
-# preparing /var/run
+
+# preparing /var/run (icinga2 cannot start in foreground otherwise)
 if [[ ! -e /var/run/icinga2/cmd ]]; then 
   echo "creating /var/run/icinga2 directory"
   mkdir -p /var/run/icinga2/cmd
