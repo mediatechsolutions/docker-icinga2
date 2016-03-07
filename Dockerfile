@@ -26,8 +26,6 @@ ADD content/ /
 
 RUN chmod +x /run.sh
 
-RUN cp -r --parents /etc/icinga2 /var/lib/icinga2 /etc/ssmtp /tmp/
-
 VOLUME ["/etc/icinga2", "/var/lib/icinga2", "/var/log/icinga2", "/etc/ssmtp"]
 
 EXPOSE 5665
