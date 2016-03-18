@@ -11,26 +11,6 @@ if [[ -z "${MYSQL_HOST}" ]]; then
   exit 1
 fi
 
-# check if icinga database exists		
-if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
-  echo "found icinga2 mysql database in linked mysql container"
-  else
-    echo "mysql database ${MYSQL_DB_NAME} not found"
-    # create database
-    if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -e "${MYSQL_CREATE_DB_CMD}"; then
-      echo "created database ${MYSQL_DB_NAME}"
-	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
-	    echo "created icinga2 mysql database schema"
-		elsefe
-		  >&2 echo "error creating icinga2 database schema"
-		  exit 1
-	  fi
-      else
-        >&2 echo "error creating database ${MYSQL_DB_NAME}"
-		exit 1
-    fi
-fi
-
 # icinga2 features
 echo "enabling icinga2 features"
 # enable ido-mysql
@@ -67,6 +47,26 @@ object ApiUser  "${API_USER}" {
   permissions = [ "*" ]
 }
 EOF
+fi
+
+# check if icinga database exists		
+if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
+  echo "found icinga2 mysql database in linked mysql container"
+  else
+    echo "mysql database ${MYSQL_DB_NAME} not found"
+    # create database
+    if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -e "${MYSQL_CREATE_DB_CMD}"; then
+      echo "created database ${MYSQL_DB_NAME}"
+	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
+	    echo "created icinga2 mysql database schema"
+		elsefe
+		  >&2 echo "error creating icinga2 database schema"
+		  exit 1
+	  fi
+      else
+        >&2 echo "error creating database ${MYSQL_DB_NAME}"
+		exit 1
+    fi
 fi
 
 
