@@ -21,7 +21,7 @@ if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQ
       echo "created database ${MYSQL_DB_NAME}"
 	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
 	    echo "created icinga2 mysql database schema"
-		else
+		elsefe
 		  >&2 echo "error creating icinga2 database schema"
 		  exit 1
 	  fi
@@ -41,7 +41,7 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	# adjusting configuration
 	sed -i "s/user.*/user = \"${MYSQL_ICINGA_USER}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/password.*/password = \"${MYSQL_ICINGA_PASSWORD}\",/g" /etc/icinga2/features-available/ido-mysql.conf
-	sed -i 's/host.*/host = "${MYSQL_HOST}",/g' /etc/icinga2/features-available/ido-mysql.conf
+	sed -i 's/host.*/host = \"${MYSQL_HOST}\",/g' /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/database.*/database = \"${MYSQL_ICINGA_DB}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	
 fi
