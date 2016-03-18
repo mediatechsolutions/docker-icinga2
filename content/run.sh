@@ -21,7 +21,7 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	# adjusting configuration
 	sed -i "s/user.*/user = \"${MYSQL_ICINGA_USER}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/password.*/password = \"${MYSQL_ICINGA_PASSWORD}\",/g" /etc/icinga2/features-available/ido-mysql.conf
-	sed -i 's/host.*/host = \"${MYSQL_HOST}\",/g' /etc/icinga2/features-available/ido-mysql.conf
+	sed -i "s/host.*/host = \"${MYSQL_HOST}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/database.*/database = \"${MYSQL_ICINGA_DB}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	
 fi
