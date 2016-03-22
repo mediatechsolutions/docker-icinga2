@@ -10,7 +10,7 @@ if [[ -z "${MYSQL_HOST}" ]]; then
   >&2 echo "no mysql database container find - please link a mysql/mariadb container using --link some-mariadb:mysql"
   exit 1
 fi
-while ! ping -c1 MYSQL_HOST &>/dev/null; do 
+while ! ping -c1 -w3 $MYSQL_HOST &>/dev/null; do 
   echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"
 done
 
