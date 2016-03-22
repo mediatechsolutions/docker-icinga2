@@ -11,7 +11,7 @@ if [[ -z "${MYSQL_HOST}" ]]; then
   exit 1
 fi
 while ! ping -c1 MYSQL_HOST &>/dev/null; then 
-  do echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"; 
+  do echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"
 done
 
 
