@@ -22,8 +22,6 @@ RUN echo "deb http://packages.icinga.org/debian icinga-jessie main" >> /etc/apt/
 RUN apt-get update -q \
   && apt-get install -y icinga2 icinga2-ido-mysql
   
-RUN echo "const NodeName = \"${NODE_NAME}\"" >> /etc/icinga2/constants.conf
-  
 ADD content/ /
 
 RUN chmod +x /run.sh
