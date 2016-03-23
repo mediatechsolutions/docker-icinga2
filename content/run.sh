@@ -29,7 +29,6 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	sed -i "s/host.*/host = \"${MYSQL_HOST}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/database.*/database = \"${MYSQL_ICINGA_DB}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	echo "enabled ido-mysql"
-	
 fi
 
 # TODO - enable command?
@@ -76,7 +75,6 @@ if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQ
 		exit 1
     fi
 fi
-
 
 # preparing /var/run (icinga2 cannot start in foreground otherwise)
 if [[ ! -e /var/run/icinga2/cmd ]]; then 
