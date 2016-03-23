@@ -28,6 +28,7 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	sed -i "s/password.*/password = \"${MYSQL_ICINGA_PASSWORD}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/host.*/host = \"${MYSQL_HOST}\",/g" /etc/icinga2/features-available/ido-mysql.conf
 	sed -i "s/database.*/database = \"${MYSQL_ICINGA_DB}\",/g" /etc/icinga2/features-available/ido-mysql.conf
+	echo "enabled ido-mysql"
 	
 fi
 
@@ -41,17 +42,41 @@ fi
 
 
 # enable api
-if [[ -L /etc/icinga2/features-enabled/api.conf ]]; then 
-  echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
-  else 
-    icinga2 api setup
-	cat <<EOF >> /etc/icinga2/conf.d/api-users.conf
+if [[ ! -L /etc/icinga2/features-enabled/api.conf ]]; then 
+  cat <<EOF >> /etc/icinga2/conf.d/api-users.conf
 
 object ApiUser  "${API_USER}" {
   password =  "${API_PASSWORD}"
   permissions = [ "*" ]
 }
 EOF
+  echo "enabled api"
+  else 
+    echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
+fi
+
+# create ca
+if [[ ! -f /var/lib/icinga2/ca/ca.crt ]]; then
+    echo "creating new ca"
+    if ! icinga2 pki new-ca; then
+		  >&2 echo "error creating new ca"
+		  exit 1	  
+	fi 
+	else
+	  "/var/lib/icinga2/ca/ca.crt already exists"
+fi
+
+#create new cert
+if [[ ! -f /etc/icinga2/pki/${NODE_NAME}.crt ]]; then
+  echo "creating new cert"
+  if ! icinga2 pki new-cert --cn ${NODE_NAME} --key /etc/icinga2/pki/${NODE_NAME}.key --csr /etc/icinga2/pki/${NODE_NAME}.csr; then
+	  >&2 echo "error creating new cert"
+	  exit 1
+  fi
+  if ! icinga2 pki sign-csr --csr /etc/icinga2/pki/${NODE_NAME}.csr --cert /etc/icinga2/pki/${NODE_NAME}.crt; then   
+    >&2 echo "error signing cert"
+    exit 1
+  fi
 fi
 
 # check if icinga database exists		
@@ -64,7 +89,7 @@ if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQ
       echo "created database ${MYSQL_DB_NAME}"
 	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
 	    echo "created icinga2 mysql database schema"
-		elsefe
+		else
 		  >&2 echo "error creating icinga2 database schema"
 		  exit 1
 	  fi
