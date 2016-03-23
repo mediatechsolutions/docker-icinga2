@@ -51,34 +51,10 @@ object ApiUser  "${API_USER}" {
 }
 EOF
   ln -s /etc/icinga2/features-available/api.conf /etc/icinga2/features-enabled/api.conf;
+  icinga2 api setup
   echo "enabled api"
   else 
     echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
-fi
-
-# create ca
-if [[ ! -f /var/lib/icinga2/ca/ca.crt ]]; then
-    echo "creating new ca"
-    if ! icinga2 pki new-ca; then
-		  >&2 echo "error creating new ca"
-		  exit 1	  
-	fi 
-	else
-	  echo "/var/lib/icinga2/ca/ca.crt already exists"
-fi
-
-#create new cert
-if [[ ! -f /etc/icinga2/pki/${NODE_NAME}.crt ]]; then
-  echo "creating new cert"
-  if ! icinga2 pki new-cert --cn ${NODE_NAME} --key /etc/icinga2/pki/${NODE_NAME}.key --csr /etc/icinga2/pki/${NODE_NAME}.csr; then
-	  >&2 echo "error creating new cert"
-	  exit 1
-  fi
-  if ! icinga2 pki sign-csr --csr /etc/icinga2/pki/${NODE_NAME}.csr --cert /etc/icinga2/pki/${NODE_NAME}.crt; then   
-    >&2 echo "error signing cert"
-    exit 1
-  fi
-  chown -R nagios:nagios /etc/icinga2/pki
 fi
 
 # check if icinga database exists		

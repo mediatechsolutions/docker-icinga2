@@ -9,8 +9,6 @@ ENV MYSQL_ICINGA_PASSWORD icinga2
 ENV API_USER api
 ENV API_PASSWORD api
 
-ENV NODE_NAME icinga2
-
 ENV DEBIAN_FRONTEND noninteractive     
 
 RUN apt-get -q update \
