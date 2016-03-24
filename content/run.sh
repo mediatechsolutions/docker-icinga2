@@ -41,7 +41,8 @@ fi
 
 
 # enable api
-if [[ ! -L /etc/icinga2/features-enabled/api.conf ]]; then 
+if [[ ! -L /etc/icinga2/features-enabled/api.conf ]]; then
+  icinga2 api setup
   cat <<EOF >> /etc/icinga2/conf.d/api-users.conf
 
 object ApiUser  "${API_USER}" {
@@ -49,8 +50,8 @@ object ApiUser  "${API_USER}" {
   permissions = [ "*" ]
 }
 EOF
-  ln -s /etc/icinga2/features-available/api.conf /etc/icinga2/features-enabled/api.conf;
-  icinga2 api setup
+  #ln -s /etc/icinga2/features-available/api.conf /etc/icinga2/features-enabled/api.conf;
+  
   echo "enabled api"
   else 
     echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
