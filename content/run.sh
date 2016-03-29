@@ -43,6 +43,9 @@ fi
 # enable api
 if [[ ! -L /etc/icinga2/features-enabled/api.conf ]]; then
   icinga2 api setup
+  sed -i "s/\/\/const NodeName.*/const NodeName = \"${HOSTNAME}\"/" /etc/icinga2/constants.conf
+  SALT=`cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 16 | head -n 1`
+  sed -i "s/const TicketSalt.*/const TicketSalt = \"${SALT}\"/" /etc/icinga2/constants.conf
   cat <<EOF >> /etc/icinga2/conf.d/api-users.conf
 
 object ApiUser  "${API_USER}" {
