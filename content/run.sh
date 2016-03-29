@@ -15,6 +15,8 @@ while ! ping -c1 -w3 $MYSQL_HOST &>/dev/null; do
   echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"
 done
 
+#start sshd for command transfer
+/usr/sbin/sshd
 
 # icinga2 features
 echo "enabling icinga2 features"
@@ -31,13 +33,13 @@ if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
 	echo "enabled ido-mysql"
 fi
 
-# TODO - enable command?
+
 # enable command
-#if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then 
-#  echo "command feature already enabled"; 
-#  else 
-#    ln -s /etc/icinga2/features-available/command.conf /etc/icinga2/features-enabled/command.conf;
-#fi
+if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then 
+  echo "command feature already enabled"; 
+  else 
+    ln -s /etc/icinga2/features-available/command.conf /etc/icinga2/features-enabled/command.conf;
+fi
 
 
 # enable api
