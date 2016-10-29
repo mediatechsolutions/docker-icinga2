@@ -12,19 +12,19 @@ ENV NOTVISIBLE "in users profile"
 ENV API_USER api
 ENV API_PASSWORD api
 
-ENV DEBIAN_FRONTEND noninteractive     
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -q update \
   && apt-get -qqy upgrade \
   && apt-get install -y wget vim mysql-client ssmtp
-  
+
 RUN wget --quiet -O - https://packages.icinga.org/icinga.key | apt-key add -
 
 RUN echo "deb http://packages.icinga.org/debian icinga-jessie main" >> /etc/apt/sources.list
 
 RUN apt-get update -q \
   && apt-get install -y icinga2 icinga2-ido-mysql openssh-server
-  
+
 RUN mkdir /var/run/sshd
 RUN echo "root:${ROOT_PASSWORD}" | chpasswd
 RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config

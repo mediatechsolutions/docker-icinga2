@@ -2,16 +2,13 @@
 
 # mysql variables
 #MYSQL_HOST="${MYSQL_PORT_3306_TCP_ADDR}"
-MYSQL_HOST="mysql"
+MYSQL_HOST="${MYSQL_HOST:-mysql}"
+MYSQL_ROOT_PASSWORD=${MYSQL_ENV_MYSQL_ROOT_PASSWORD:-${MYSQL_ROOT_PASSWORD}}
 MYSQL_CREATE_DB_CMD="CREATE DATABASE ${MYSQL_ICINGA_DB}; \
         GRANT SELECT, INSERT, UPDATE, DELETE, DROP, CREATE VIEW, INDEX, EXECUTE ON ${MYSQL_ICINGA_DB}.* TO '${MYSQL_ICINGA_USER}'@'%' IDENTIFIED BY '${MYSQL_ICINGA_PASSWORD}';"
-		
+
 # check linked mysql container
-if [[ -z "${MYSQL_HOST}" ]]; then
-  >&2 echo "no mysql database container find - please link a mysql/mariadb container using --link some-mariadb:mysql"
-  exit 1
-fi
-while ! ping -c1 -w3 $MYSQL_HOST &>/dev/null; do 
+while ! ping -c1 -w3 $MYSQL_HOST &>/dev/null; do
   echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"
 done
 
@@ -21,9 +18,9 @@ done
 # icinga2 features
 echo "enabling icinga2 features"
 # enable ido-mysql
-if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then 
-  echo "symlink for /etc/icinga2/features-enabled/ido-mysql.conf already exists"; 
-  else 
+if [[ -L /etc/icinga2/features-enabled/ido-mysql.conf ]]; then
+  echo "symlink for /etc/icinga2/features-enabled/ido-mysql.conf already exists";
+  else
     ln -s /etc/icinga2/features-available/ido-mysql.conf /etc/icinga2/features-enabled/ido-mysql.conf;
 	# adjusting configuration
 	sed -i "s/user.*/user = \"${MYSQL_ICINGA_USER}\",/g" /etc/icinga2/features-available/ido-mysql.conf
@@ -35,9 +32,9 @@ fi
 
 
 # enable command
-if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then 
-  echo "command feature already enabled"; 
-  else 
+if [[ -L /etc/icinga2/features-enabled/command.conf ]]; then
+  echo "command feature already enabled";
+  else
     ln -s /etc/icinga2/features-available/command.conf /etc/icinga2/features-enabled/command.conf;
 fi
 
@@ -56,21 +53,21 @@ object ApiUser  "${API_USER}" {
 }
 EOF
   #ln -s /etc/icinga2/features-available/api.conf /etc/icinga2/features-enabled/api.conf;
-  
+
   echo "enabled api"
-  else 
-    echo "symlink for /etc/icinga2/features-enabled/api.conf already exists"; 
+  else
+    echo "symlink for /etc/icinga2/features-enabled/api.conf already exists";
 fi
 
-# check if icinga database exists		
-if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
+# check if icinga database exists
+if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
   echo "found icinga2 mysql database in linked mysql container"
   else
     echo "mysql database ${MYSQL_DB_NAME} not found"
     # create database
-    if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} -e "${MYSQL_CREATE_DB_CMD}"; then
+    if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ROOT_PASSWORD} -e "${MYSQL_CREATE_DB_CMD}"; then
       echo "created database ${MYSQL_DB_NAME}"
-	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
+	  if mysql -h ${MYSQL_HOST} -u root -p${MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB} < /usr/share/icinga2-ido-mysql/schema/mysql.sql; then
 	    echo "created icinga2 mysql database schema"
 		else
 		  >&2 echo "error creating icinga2 database schema"
@@ -83,7 +80,7 @@ if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ENV_MYSQL_ROOT_PASSWORD} ${MYSQ
 fi
 
 # preparing /var/run (icinga2 cannot start in foreground otherwise)
-if [[ ! -e /var/run/icinga2/cmd ]]; then 
+if [[ ! -e /var/run/icinga2/cmd ]]; then
   echo "creating /var/run/icinga2 directory"
   mkdir -p /var/run/icinga2/cmd
   chown -R nagios:nagios /var/run/icinga2
