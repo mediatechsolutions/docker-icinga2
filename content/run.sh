@@ -10,6 +10,11 @@ MYSQL_CREATE_DB_CMD="CREATE DATABASE ${MYSQL_ICINGA_DB}; \
 # check linked mysql container
 while ! ping -c1 -w3 $MYSQL_HOST &>/dev/null; do
   echo "ping to ${MYSQL_HOST} failed - waiting for mysql container"
+  sleep 1
+done
+while ! mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ROOT_PASSWORD} ; do
+  echo "Mysql does not answer yet"
+  sleep 1
 done
 
 #start sshd for command transfer
@@ -60,7 +65,7 @@ EOF
 fi
 
 # check if icinga database exists
-if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}; then
+if mysqlshow -h ${MYSQL_HOST} --u root -p${MYSQL_ROOT_PASSWORD} ${MYSQL_ICINGA_DB}  &>/dev/null; then
   echo "found icinga2 mysql database in linked mysql container"
   else
     echo "mysql database ${MYSQL_DB_NAME} not found"
